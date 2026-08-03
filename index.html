@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paint House</title>
+  <link href="https://fonts.cdnfonts.com/css/coolvetica" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Coolvetica', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background-color: #f9f9f9; color: #111; line-height: 1.6; overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+
+    /* YOUTUBE-STYLE YELLOW PAINT DROP & SPLASH INTRO ANIMATION */
+    #paint-drop-intro {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #ffffff; z-index: 9999;
+      display: flex; justify-content: center; align-items: center;
+      animation: fadeOutDropIntro 0.6s ease 1.6s forwards;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .falling-drop {
+      position: absolute; width: 60px; height: 80px;
+      background: radial-gradient(circle at 30% 30%, #FFF500, #FF9500);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: dropFallAndSplash 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      box-shadow: 0 15px 30px rgba(255, 149, 0, 0.6);
+    }
+    @keyframes dropFallAndSplash {
+      0% { transform: translateY(-400px) scale(0.4); opacity: 0; }
+      40% { transform: translateY(0px) scale(1); opacity: 1; }
+      75% { transform: translateY(20px) scale(4.5, 0.7); opacity: 1; }
+      100% { transform: translateY(10px) scale(30); opacity: 0; }
+    }
+    @keyframes fadeOutDropIntro {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    /* ULTRA-SLIM WHITE STICKY HEADER */
+    header {
+      position: fixed; top: 0; left: 0; width: 100%;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 2.5rem; 
+      background: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      z-index: 2000;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px; color: #111; z-index: 2001; cursor: pointer; }
+    
+    nav { display: flex; align-items: center; gap: 2rem; }
+    .nav-links { display: flex; gap: 1.8rem; list-style: none; font-size: 0.85rem; font-weight: 600; letter-spacing: 2px; }
+    .nav-links a { color: #111; transition: opacity 0.2s ease; cursor: pointer; }
+    .nav-links a:hover { opacity: 0.6; }
+
+    .hamburger-btn {
+      display: none; flex-direction: column; justify-content: space-around;
+      width: 26px; height: 20px; background: transparent; border: none; cursor: pointer; z-index: 2002;
+    }
+    .hamburger-btn span { width: 100%; height: 2.5px; background-color: #111; border-radius: 2px; }
+
+    .user-status { font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; color: #111; display: none; align-items: center; gap: 1rem; }
+    .btn-black { background-color: #000; color: #fff; padding: 0.5rem 1.2rem; border-radius: 30px; font-size: 0.75rem; font-weight: 600; border: none; cursor: pointer; transition: transform 0.2s ease; }
+    .btn-black:hover { transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: #111; border: 1px solid #111; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
+    .btn-admin { background: #FF3B30; color: #fff; padding: 0.35rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; border: none; cursor: pointer; display: none; }
+    .btn-danger { background: #DC3545; color: #fff; padding: 0.7rem 1.4rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; }
+
+    /* THICKER DRIP LINES (BEHIND TEXT) */
+    .drip-bar { position: absolute; top: 0; width: 15px; border-radius: 0 0 8px 8px; z-index: 2; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .drip-1 { left: 4%; height: 190px; background: #FF3B30; }
+    .drip-2 { left: 22%; height: 220px; background: #FF9500; }
+    .drip-3 { left: 40%; height: 250px; background: #FFCC00; }
+    .drip-4 { left: 58%; height: 275px; background: #4CD964; }
+    .drip-5 { left: 76%; height: 300px; background: #5AC8FA; }
+    .drip-6 { left: 94%; height: 320px; background: #007AFF; }
+
+    /* HERO */
+    .hero {
+      position: relative; height: 100vh; min-height: 600px;
+      background: url('https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=2070&auto=format&fit=crop') center/cover;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 8rem 2.5rem 3rem 2.5rem; color: #fff;
+    }
+    .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.35); z-index: 1; }
+    
+    .hero-content { position: relative; z-index: 10; margin-top: 1rem; }
+    .hero-subtitle { font-size: 0.9rem; letter-spacing: 3px; font-weight: 600; margin-bottom: 1rem; color: #ffffff; text-transform: uppercase; }
+    .hero-title { font-size: 4.5rem; font-weight: 800; line-height: 1.05; text-transform: uppercase; letter-spacing: 2px; color: #ffffff; }
+    .hero-footer { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; gap: 1rem; flex-wrap: wrap; }
+    .hero-desc { max-width: 440px; font-size: 1rem; line-height: 1.6; color: #ffffff; font-weight: 500; }
+    .btn-explore { background: #ffffff; color: #000000; padding: 0.9rem 2rem; border-radius: 30px; font-weight: 700; font-size: 0.85rem; letter-spacing: 2px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none; z-index: 10; position: relative; }
+
+    section { padding: 5rem 2rem; max-width: 1300px; margin: 0 auto; background: #f9f9f9; position: relative; z-index: 10; }
+    .section-label { font-size: 0.8rem; font-weight: 700; letter-spacing: 3px; color: #666; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .section-title { font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem; }
+
+    .palette-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .wheel-container { position: relative; width: 360px; height: 360px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+    .wheel-pointer { position: absolute; top: -12px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid #000; z-index: 10; }
+    .color-wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+    .wheel-center { position: absolute; width: 150px; height: 150px; background: #000; color: #fff; border-radius: 50%; top: 105px; left: 105px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 5; padding: 1rem; transition: background-color 0.4s ease; }
+    .wheel-center h3 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .wheel-dot { position: absolute; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1.5px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    
+    .room-preview-box { height: 260px; width: 100%; border-radius: 12px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; letter-spacing: 2px; transition: background-color 0.5s ease; border: 4px solid #eee; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+    .mixer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: flex-start; }
+    .swatch-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.6rem; max-height: 200px; overflow-y: auto; padding-right: 5px; }
+    .swatch-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; position: relative; border: 2px solid #ddd; }
+    .swatch-circle.selected { border-color: #000; transform: scale(1.1); }
+    .blend-display { background: #805B98; height: 260px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; padding: 1.8rem; color: #fff; }
+    .calculator-box { background: #fff; padding: 1.8rem; border-radius: 12px; border: 1px solid #eee; margin-top: 1rem; }
+
+    .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
+    .service-card { background: #fff; border: 1px solid #eee; padding: 2rem 1.5rem; border-radius: 12px; transition: transform 0.3s ease; }
+    .service-card:hover { transform: translateY(-5px); border-color: #000; }
+    .service-icon { font-size: 2rem; margin-bottom: 1rem; }
+
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+    .gallery-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+    .gallery-img { height: 200px; background-size: cover; background-position: center; }
+
+    .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+    .review-card { background: #fff; border: 1px solid #eee; padding: 2rem; border-radius: 12px; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 3000;
+      display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card { background: #fff; padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 950px; position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal-card.wide { max-width: 950px; }
+    .modal-close { position: absolute; top: 1.2rem; right: 1.2rem; font-size: 1.5rem; cursor: pointer; border: none; background: none; font-weight: 800; }
+    .auth-tabs { display: flex; gap: 1.5rem; border-bottom: 2px solid #eee; margin-bottom: 1.5rem; overflow-x: auto; }
+    .auth-tab { padding-bottom: 0.5rem; font-weight: 700; cursor: pointer; color: #888; white-space: nowrap; }
+    .auth-tab.active { color: #000; border-bottom: 2px solid #000; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full { grid-column: span 2; }
+    .form-group label { font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.3rem; color: #444; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 6px; background: #fcfcfc; font-size: 0.9rem; }
+
+    .admin-table-container { max-height: 400px; overflow-x: auto; overflow-y: auto; margin-top: 1rem; border: 1px solid #eee; border-radius: 8px; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px; }
+    .admin-table th { background: #000; color: #fff; padding: 0.8rem 0.5rem; text-align: left; position: sticky; top: 0; font-weight: 700; }
+    .admin-table td { padding: 0.7rem 0.5rem; border-bottom: 1px solid #eee; color: #333; }
+
+    .price-tag { background: #000; color: #fff; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; margin-top: 0.5rem; }
+    .badge-paid { background: #28a745; color: #fff; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
+    .badge-cod { background: #FF9500; color: #fff; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
+
+    footer { background: #000; color: #fff; padding: 4rem 2rem 2rem 2rem; position: relative; z-index: 10; }
+    .footer-title { font-size: 3.2rem; font-weight: 800; margin-bottom: 3rem; }
+    .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; border-bottom: 1px solid #222; padding-bottom: 2rem; margin-bottom: 2rem; }
+
+    .terms-section { border-top: 1px solid #222; padding-top: 1.5rem; margin-top: 1.5rem; color: #888; font-size: 0.8rem; line-height: 1.8; }
+    .terms-section h4 { color: #fff; margin-bottom: 0.5rem; font-size: 0.9rem; }
+
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #fff; color: #000; padding: 0.8rem 1.4rem; border-radius: 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); z-index: 4000; opacity: 0; transition: opacity 0.3s ease; border: 1px solid #eee; }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 900px) {
+      header { padding: 0.6rem 1.2rem; }
+      .hamburger-btn { display: flex; }
+      nav {
+        position: fixed; top: 0; right: -100%; width: 280px; height: 100vh;
+        background: #ffffff; flex-direction: column; align-items: flex-start;
+        padding: 5rem 2rem 2rem; box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+        transition: right 0.3s ease; z-index: 2000; gap: 1.5rem;
+      }
+      nav.active { right: 0; }
+      .nav-links { flex-direction: column; gap: 1.5rem; width: 100%; }
+      .nav-links a { color: #111; }
+      .hamburger-btn span { background-color: #111; }
+      .logo { color: #111; }
+      .user-status { flex-direction: column; align-items: flex-start; width: 100%; color: #111; }
+      .btn-outline { color: #111; border-color: #111; }
+      .hero-title { font-size: 3.2rem; }
+      .hero-footer { flex-direction: column; align-items: flex-start; }
+      .palette-grid, .mixer-grid, .services-grid, .gallery-grid, .reviews-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- YOUTUBE-STYLE YELLOW PAINT DROP & SPLASH INTRO ANIMATION -->
+  <div id="paint-drop-intro">
+    <div class="falling-drop"></div>
+  </div>
+
+  <!-- THICKER DRIP LINES (BEHIND TEXT) -->
+  <div class="drip-bar drip-1"></div><div class="drip-bar drip-2"></div>
+  <div class="drip-bar drip-3"></div><div class="drip-bar drip-4"></div>
+  <div class="drip-bar drip-5"></div><div class="drip-bar drip-6"></div>
+
+  <!-- SLIM WHITE STICKY HEADER -->
+  <header>
+    <div class="logo" onclick="goToHome()">Paint House</div>
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav id="main-nav">
+      <ul class="nav-links" id="customer-nav-links">
+        <li><a href="#services" onclick="closeMobileNav()">SERVICES</a></li>
+        <li><a href="#colors" onclick="closeMobileNav()">VISUALIZER</a></li>
+        <li><a href="#mixer" onclick="closeMobileNav()">TOOLS</a></li>
+        <li><a href="#gallery" onclick="closeMobileNav()">GALLERY</a></li>
+        <li><a href="#reviews" onclick="closeMobileNav()">REVIEWS</a></li>
+        <li><a id="nav-auth-btn" onclick="openAuthModal('login'); closeMobileNav();">LOGIN / REGISTER</a></li>
+        <li><a href="#contact" onclick="closeMobileNav()">CONTACT</a></li>
+      </ul>
+
+      <ul class="nav-links" id="admin-nav-links" style="display: none;">
+        <li><a onclick="openAdminDashboard('orders'); closeMobileNav();">ADMIN DASHBOARD</a></li>
+        <li><a onclick="openAccountModal(); closeMobileNav();">PROFILE & UPI</a></li>
+        <li><a onclick="logout(); closeMobileNav();" style="color: #DC3545;">LOGOUT</a></li>
+      </ul>
+
+      <button id="admin-dashboard-btn" class="btn-admin" onclick="openAdminDashboard('orders'); closeMobileNav();">ADMIN DASHBOARD</button>
+      
+      <div id="user-status" class="user-status">
+        <button class="btn-outline" onclick="openAccountModal(); closeMobileNav();">Settings / Account</button>
+        <button class="btn-outline" onclick="logout(); closeMobileNav();">Logout</button>
+      </div>
+      <button class="btn-black" id="nav-book-btn" onclick="handleBookingClick(); closeMobileNav();">Book a Painter</button>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <div class="hero" id="home">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-subtitle">• PAINT HOUSE — EST. CRAFT OF COLOR</div>
+      <h1 class="hero-title" id="hero-main-title">PAINT<br>YOUR<br>HOUSE</h1>
+    </div>
+    <div class="hero-footer">
+      <p class="hero-desc" id="hero-main-desc">Explore living color, mix your own signature shade, use our paint calculator, and book expert painters to bring your walls to life.</p>
+      <a href="#colors" id="hero-main-btn" class="btn-explore">START VISUALIZING ↓</a>
+      <div style="flex: 1;"></div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER SECTIONS CONTAINER -->
+  <div id="customer-sections">
+
+    <!-- SERVICES -->
+    <section id="services">
+      <div class="section-label">WHAT WE DO</div>
+      <h2 class="section-title">Our Premium<br>Painting Services</h2>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">🏠</div>
+          <h3>Interior Painting</h3>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">Smooth matte, glossy, and velvet finishes tailored for living rooms & bedrooms.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">☀️</div>
+          <h3>Exterior Weatherproofing</h3>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">High-durability coats resistant to extreme rain, UV heat, and dust buildup.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🎨</div>
+          <h3>Wall Textures & Stencils</h3>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">Custom feature walls with artistic metallic, velvet, and stencil designs.</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🪵</div>
+          <h3>Wood & Metal Polish</h3>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">Protective enamel and PU polish for doors, windows, and iron railings.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISUALIZER -->
+    <section id="colors">
+      <div class="section-label">ROOM VISUALIZER (100+ SHADES)</div>
+      <h2 class="section-title">See It On<br>Your Walls</h2>
+      <p style="color: #666; margin-bottom: 2.5rem;">Spin the wheel or click next to view 100+ shades one by one smoothly.</p>
+      
+      <div class="palette-grid">
+        <div>
+          <div class="wheel-container">
+            <div class="wheel-pointer"></div>
+            <div class="color-wheel" id="wheel">
+              <div class="wheel-center" id="wheel-center-bg">
+                <h3 id="center-color-name">Coral Blaze</h3>
+                <p id="center-color-hex">#FF3B30</p>
+              </div>
+            </div>
+          </div>
+          <div class="controls" style="justify-content: center; margin-top: 2.5rem; display: flex; gap: 1rem;">
+            <button class="btn-black" style="padding: 0.9rem 1.5rem;" onclick="prevColor()">← PREV</button>
+            <button class="btn-explore" style="margin: 0;" onclick="nextColor()">NEXT SHADE →</button>
+          </div>
+        </div>
+
+        <div>
+          <div>
+            <h3 id="color-name" style="font-size: 2.2rem; font-weight: 800;">Coral Blaze</h3>
+            <p id="color-hex" style="color: #666; font-family: monospace; font-size: 1.1rem;">#FF3B30</p>
+            <span id="color-price-display" class="price-tag" style="font-size: 0.9rem; padding: 0.4rem 0.9rem;">Price: INR 499 / Room</span>
+          </div>
+          <div id="room-preview" class="room-preview-box" style="background-color: #FF3B30;">
+            LIVING ROOM PREVIEW
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIXER & CALCULATOR -->
+    <section id="mixer">
+      <div class="section-label">PAINT TOOLS</div>
+      <h2 class="section-title">Unlimited Mixer &<br>Color Board</h2>
+
+      <div class="mixer-grid">
+        <div>
+          <h3 style="margin-bottom: 0.5rem;">Custom Color Mixer (Pick 2 Colors)</h3>
+          <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">Click any 2 swatches below to blend them instantly!</p>
+          <div class="swatch-picker" id="swatch-container"></div>
+          
+          <div class="blend-display" id="blend-box" style="margin-top: 1rem;">
+            <div style="letter-spacing: 1.5px; font-size: 0.85rem;">CUSTOM BLENDED SHADE</div>
+            <div style="text-align: center;">
+              <span style="font-size: 0.8rem; letter-spacing: 2px;">MIXED HEX</span>
+              <h2 id="blend-hex" style="font-size: 2.5rem; font-weight: 800;">#805B98</h2>
+            </div>
+            <button class="btn-black" onclick="saveBlend()">COPY BLEND HEX</button>
+          </div>
+
+          <div style="margin-top: 1.5rem; background: #fff; padding: 1.2rem; border-radius: 12px; border: 1px solid #eee;">
+            <label style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Or Pick Custom Color from Board</label>
+            <input type="color" id="custom-color-picker" value="#ff5722" style="width: 100%; height: 45px; border: none; cursor: pointer; border-radius: 6px;" oninput="onCustomColorPick(this.value)">
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin-bottom: 1rem;">Liter & Cost Estimator</h3>
+          <div class="calculator-box">
+            <div class="form-grid">
+              <div class="form-group"><label>Length (ft)</label><input type="number" id="calc-l" value="12"></div>
+              <div class="form-group"><label>Width (ft)</label><input type="number" id="calc-w" value="12"></div>
+              <div class="form-group"><label>Height (ft)</label><input type="number" id="calc-h" value="10"></div>
+              <div class="form-group"><label>Doors/Windows</label><input type="number" id="calc-doors" value="2"></div>
+              <div class="form-group full" style="margin-top: 1rem;">
+                <button class="btn-black" onclick="calculatePaint()">CALCULATE ESTIMATE</button>
+              </div>
+            </div>
+            <div id="calc-result" style="display: none; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #eee;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Paint Required:</span> <strong id="calc-liters">0 Liters</strong></div>
+              <div style="display: flex; justify-content: space-between;"><span>Estimated Cost:</span> <strong id="calc-cost">INR 0</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="gallery">
+      <div class="section-label">PORTFOLIO</div>
+      <h2 class="section-title">Home Transformations</h2>
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop');"></div>
+          <div style="padding: 1.2rem;">
+            <h4>Modern Living Room</h4>
+            <p style="color:#666; font-size:0.8rem;">Royal Azure Accent Wall</p>
+          </div>
+        </div>
+        <div class="gallery-card">
+          <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=600&auto=format&fit=crop');"></div>
+          <div style="padding: 1.2rem;">
+            <h4>Minimalist Bedroom</h4>
+            <p style="color:#666; font-size:0.8rem;">Meadow Fresh Matte</p>
+          </div>
+        </div>
+        <div class="gallery-card">
+          <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop');"></div>
+          <div style="padding: 1.2rem;">
+            <h4>Luxury Villa Exterior</h4>
+            <p style="color:#666; font-size:0.8rem;">Slate Weatherproof Finish</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reviews">
+      <div class="section-label">TESTIMONIALS</div>
+      <h2 class="section-title">What Our<br>Clients Say</h2>
+
+      <div style="background: #fff; border: 1px solid #eee; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Leave Your Review</h3>
+        <form onsubmit="handleReviewSubmit(event)" class="form-grid">
+          <div class="form-group">
+            <label>RATING</label>
+            <select id="review-rating">
+              <option value="5">★ ★ ★ ★ ★ (5/5)</option>
+              <option value="4">★ ★ ★ ★ ☆ (4/5)</option>
+              <option value="3">★ ★ ★ ☆ ☆ (3/5)</option>
+              <option value="2">★ ★ ☆ ☆ ☆ (2/5)</option>
+              <option value="1">★ ☆ ☆ ☆ ☆ (1/5)</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>YOUR FEEDBACK / REVIEW</label>
+            <textarea id="review-comment" rows="3" placeholder="Write about your painting experience..." required></textarea>
+          </div>
+          <div class="form-group full">
+            <button type="submit" class="btn-black">SUBMIT REVIEW</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="reviews-grid" id="reviews-list-container">
+        <p style="color: #666;">Loading reviews...</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeAuthModal()">×</button>
+      <div class="auth-tabs">
+        <div class="auth-tab" id="login-tab-btn" onclick="switchAuthTab('login')">LOGIN</div>
+        <div class="auth-tab" id="register-tab-btn" onclick="switchAuthTab('register')">REGISTER</div>
+      </div>
+
+      <form id="login-form" class="form-grid" onsubmit="handleLogin(event)" novalidate>
+        <div class="form-group full"><label>EMAIL ADDRESS</label><input type="text" id="login-email" required></div>
+        <div class="form-group full"><label>PASSWORD</label><input type="password" id="login-password" required></div>
+        <div class="form-group full" style="margin-top: 0.5rem;"><button type="submit" class="btn-black">LOG IN</button></div>
+      </form>
+
+      <form id="register-form" class="form-grid" style="display: none;" onsubmit="handleRegister(event)" novalidate>
+        <div class="form-group full"><label>FULL NAME</label><input type="text" id="reg-name" required></div>
+        <div class="form-group full"><label>EMAIL ADDRESS</label><input type="text" id="reg-email" required></div>
+        <div class="form-group full"><label>PASSWORD</label><input type="password" id="reg-password" required></div>
+        <div class="form-group full" style="margin-top: 1rem;"><button type="submit" class="btn-black">REGISTER ACCOUNT</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ACCOUNT & SETTINGS MODAL -->
+  <div class="modal-overlay" id="account-modal">
+    <div class="modal-card wide">
+      <button class="modal-close" onclick="closeAccountModal()">×</button>
+      <div class="section-label">ACCOUNT & SETTINGS</div>
+      <h2 style="font-size: 2rem; margin-bottom: 1rem;">My Profile Settings</h2>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;" class="form-grid">
+        <div>
+          <div style="background: #fcfcfc; border: 1px solid #eee; padding: 1.2rem; border-radius: 10px; margin-bottom: 1.5rem;">
+            <form onsubmit="handleUpdateProfile(event)" class="form-grid">
+              <div class="form-group full">
+                <label>FULL NAME</label>
+                <input type="text" id="edit-profile-name" required>
+              </div>
+              <div class="form-group full" style="margin-top: 0.5rem;">
+                <button type="submit" class="btn-black">UPDATE NAME</button>
+              </div>
+            </form>
+            <div style="display:flex; justify-content:space-between; padding:0.6rem 0; margin-top: 0.5rem;"><span>EMAIL</span><strong id="acc-email">-</strong></div>
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0;"><span>ROLE</span><strong id="acc-role" style="color: #FF3B30;">Customer</strong></div>
+          </div>
+
+          <div id="admin-upi-section" style="display: none; border-top: 1px solid #eee; padding-top: 1rem; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Admin Payment Settings (UPI)</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.8rem;">Enter Bank UPI ID (VPA) for direct customer payments.</p>
+            <form onsubmit="handleSaveUPI(event)" class="form-grid">
+              <div class="form-group full"><input type="text" id="admin-vpa-input" placeholder="admin@upi" required></div>
+              <div class="form-group full" style="margin-top: 0.5rem;"><button type="submit" class="btn-black">SAVE UPI ID</button></div>
+            </form>
+          </div>
+
+          <div style="border-top: 1px solid #eee; padding-top: 1rem;">
+            <h3 style="font-size: 1.1rem; color: #DC3545; margin-bottom: 0.5rem;">Danger Zone</h3>
+            <form onsubmit="handleDeleteAccount(event)" class="form-grid">
+              <div class="form-group full"><input type="password" id="delete-confirm-password" placeholder="Confirm Password" required></div>
+              <div class="form-group full" style="margin-top: 0.5rem;"><button type="submit" class="btn-danger">DELETE MY ACCOUNT</button></div>
+            </form>
+          </div>
+        </div>
+
+        <div id="customer-history-box">
+          <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">My Booking History</h3>
+          <div class="admin-table-container" style="margin-top: 0; max-height: 380px;">
+            <table class="admin-table">
+              <thead><tr><th>ID</th><th>Color</th><th>Date</th><th>Amount</th><th>Invoice</th></tr></thead>
+              <tbody id="user-history-body">
+                <tr><td colspan="5" style="text-align: center;">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING MODAL -->
+  <div class="modal-overlay" id="booking-modal">
+    <div class="modal-card wide">
+      <button class="modal-close" onclick="closeBookingModal()">×</button>
+      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;" class="form-grid">
+        <div>
+          <div class="section-label">APPOINTMENT</div>
+          <h2 style="font-size: 2.2rem;">Book Your<br>Painters</h2>
+          <p style="color: #666; font-size: 0.9rem;">Fill details and select payment method.</p>
+
+          <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Paint Rate</span> <span id="summary-rate">INR 499 / Room</span></div>
+            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.2rem; border-top: 1px solid #eee; padding-top: 0.5rem;"><span>Total Amount</span> <span id="summary-total">INR 499</span></div>
+          </div>
+        </div>
+
+        <form class="form-grid" onsubmit="handleBookingSubmit(event)">
+          <div class="form-group"><label>FULL NAME</label><input type="text" id="book-name" required></div>
+          <div class="form-group"><label>EMAIL</label><input type="email" id="book-email" required></div>
+          <div class="form-group"><label>CONTACT NUMBER</label><input type="tel" id="book-phone" value="+91 9876543210" required></div>
+          <div class="form-group"><label>ID PROOF (OPTIONAL)</label><input type="text" id="book-id-proof" placeholder="Aadhaar / Passport"></div>
+          <div class="form-group"><label>SELECTED COLOR</label><input type="text" id="selected-color-input" value="Coral Blaze" readonly></div>
+          <div class="form-group"><label>DESIGN STYLE</label>
+            <select id="book-style"><option>Matte Classic</option><option>Glossy Premium</option><option>Textured Silk</option></select>
+          </div>
+          <div class="form-group"><label>DATE</label><input type="date" id="book-date" required></div>
+          <div class="form-group"><label>TIME</label><input type="time" id="book-time" value="09:00" required></div>
+          <div class="form-group"><label>ROOMS</label><input type="number" id="book-rooms" value="1" min="1" onchange="recalculatePrice()"></div>
+          <div class="form-group">
+            <label>PAYMENT METHOD</label>
+            <select id="book-pay-mode">
+              <option value="COD">Cash on Delivery (COD)</option>
+              <option value="ONLINE_UPI">Online UPI (Direct Bank Transfer)</option>
+            </select>
+          </div>
+          <div class="form-group full"><label>NOTES (OPTIONAL)</label><input type="text" id="book-notes" placeholder="Specific requirements..."></div>
+          <div class="form-group full" style="margin-top: 1rem;">
+            <button type="submit" class="btn-black" style="padding: 1rem; font-size: 0.9rem; background: #28a745;">CONFIRM & PROCEED TO PAY</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONLINE UPI MODAL -->
+  <div class="modal-overlay" id="upi-pay-modal">
+    <div class="modal-card" style="text-align: center;">
+      <button class="modal-close" onclick="closeUpiPayModal()">×</button>
+      <div class="section-label">ONLINE UPI PAYMENT</div>
+      <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Transfer to Admin Bank</h2>
+      <p style="color: #666; font-size: 0.85rem; margin-bottom: 1rem;">Scan or pay using Google Pay, PhonePe, or Paytm.</p>
+
+      <div style="background: #f0f0f0; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+        <p style="font-size: 0.8rem; color: #666;">ADMIN UPI ID (VPA)</p>
+        <h3 id="pay-modal-vpa" style="font-size: 1.3rem; color: #007AFF; margin-bottom: 0.5rem;">paint.house@upi</h3>
+        <p style="font-size: 0.8rem; color: #666;">AMOUNT TO PAY</p>
+        <h2 id="pay-modal-amount" style="font-size: 2rem; color: #28a745;">INR 499</h2>
+      </div>
+      <button class="btn-black" onclick="confirmOnlineUpiDone()">I HAVE PAID — CONFIRM BOOKING</button>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD MODAL (INDIVIDUAL TABS/SECTIONS) -->
+  <div class="modal-overlay" id="admin-modal">
+    <div class="modal-card wide">
+      <button class="modal-close" onclick="closeAdminDashboard()">×</button>
+      <div class="section-label">ADMIN PANEL</div>
+      <h2 style="font-size: 2.2rem; margin-bottom: 0.5rem;">Dashboard & Management</h2>
+
+      <div class="auth-tabs" style="margin-top: 1rem;">
+        <div class="auth-tab active" id="tab-btn-orders" onclick="switchAdminTab('orders')">CUSTOMER BOOKINGS</div>
+        <div class="auth-tab" id="tab-btn-wheel-prices" onclick="switchAdminTab('wheel-prices')">WHEEL COLOR PRICES</div>
+        <div class="auth-tab" id="tab-btn-mixer-prices" onclick="switchAdminTab('mixer-prices')">MIXER COLOR PRICES</div>
+        <div class="auth-tab" id="tab-btn-reviews" onclick="switchAdminTab('reviews')">CUSTOMER REVIEWS</div>
+        <div class="auth-tab" id="tab-btn-upi" onclick="switchAdminTab('upi')">UPI SETTINGS</div>
+      </div>
+
+      <!-- SECTION 1: CUSTOMER BOOKINGS -->
+      <div id="admin-orders-view" class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr><th>ID</th><th>Customer</th><th>Phone</th><th>Color & Style</th><th>Date & Time</th><th>Rooms</th><th>Amount</th><th>Pay Mode</th><th>Status</th></tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <tr><td colspan="9" style="text-align: center;">Loading bookings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 2: WHEEL COLOR PRICES -->
+      <div id="admin-wheel-prices-view" class="admin-table-container" style="display: none;">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Wheel Color Name</th><th>Hex</th><th>Current Price / Room</th><th>Set New Price (INR)</th><th>Action</th></tr>
+          </thead>
+          <tbody id="admin-wheel-prices-body">
+            <tr><td colspan="5" style="text-align: center;">Loading colors...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 3: MIXER COLOR PRICES -->
+      <div id="admin-mixer-prices-view" class="admin-table-container" style="display: none;">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Mixer Color Name</th><th>Hex</th><th>Current Price / Room</th><th>Set New Price (INR)</th><th>Action</th></tr>
+          </thead>
+          <tbody id="admin-mixer-prices-body">
+            <tr><td colspan="5" style="text-align: center;">Loading colors...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 4: CUSTOMER REVIEWS -->
+      <div id="admin-reviews-view" class="admin-table-container" style="display: none;">
+        <table class="admin-table">
+          <thead>
+            <tr><th>ID</th><th>Customer Name</th><th>Rating</th><th>Feedback / Comment</th><th>Date</th></tr>
+          </thead>
+          <tbody id="admin-reviews-table-body">
+            <tr><td colspan="5" style="text-align: center;">Loading reviews...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 5: ADMIN UPI SETTINGS -->
+      <div id="admin-upi-view" style="display: none; padding: 1.5rem 0;">
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Manage Bank UPI ID (VPA)</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">This UPI ID will be used when customers choose online UPI payment during booking.</p>
+        <form onsubmit="handleSaveAdminUpiFromModal(event)" class="form-grid" style="max-width: 500px;">
+          <div class="form-group full"><input type="text" id="admin-modal-vpa-input" placeholder="admin@upi" required></div>
+          <div class="form-group full" style="margin-top: 0.5rem;"><button type="submit" class="btn-black">SAVE ADMIN UPI ID</button></div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer id="contact">
+    <h2 class="footer-title">Let's paint<br>your world.</h2>
+    <div class="footer-grid">
+      <div><h4>CALL</h4><p>+91 7372049917</p></div>
+      <div><h4>EMAIL</h4><p>ADITYA RAJ /aditya655.2015@gmail.com</p></div>
+      <div><h4>STUDIO</h4><p>Ratanpar, Rajkot</p></div>
+    </div>
+
+    <div class="terms-section">
+      <h4>TERMS & CONDITIONS</h4>
+      <p>1. <strong>Booking & Service:</strong> All bookings made through Paint House are subject to painter availability. Appointments require confirmation from certified professionals.</p>
+      <p>2. <strong>Pricing & Payments:</strong> Prices are calculated per room according to color selection. Payments made via Direct Bank UPI or Cash on Delivery (COD) are non-refundable once service execution begins.</p>
+      <p>3. <strong>Cancellation Policy:</strong> Free cancellations are allowed up to 24 hours prior to the scheduled booking date and time.</p>
+      
+      <h4 style="margin-top: 1rem;">PRIVACY POLICY</h4>
+      <p>We respect customer privacy. Personal data is stored securely solely for appointment scheduling and service delivery. We do not sell or share customer data with third parties.</p>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 2rem; border-top: 1px solid #222; padding-top: 1.5rem; font-size: 0.85rem; color: #666; flex-wrap: wrap; gap: 1rem;">
+      <div>Paint House</div>
+      <div>© 2026 Paint House. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast">Notice</div>
+
+  <!-- JAVASCRIPT (STANDALONE / CLIENT-SIDE) -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const intro = document.getElementById('paint-drop-intro');
+        if (intro) intro.style.display = 'none';
+      }, 1600);
+      initClientData();
+    });
+
+    let currentUser = null;
+    let wheelPalette = [];
+    let mixerPalette = [];
+    let currentIdx = 0;
+    let currentPendingPayload = null;
+    let selectedMixerColors = [];
+    let mockBookings = [];
+    let mockReviews = [];
+
+    function initClientData() {
+      const baseColors = [
+        { id: 1, name: "Coral Blaze", hex: "#FF3B30", price: 499 },
+        { id: 2, name: "Sunset Orange", hex: "#FF9500", price: 449 },
+        { id: 3, name: "Golden Sunshine", hex: "#FFCC00", price: 399 },
+        { id: 4, name: "Meadow Green", hex: "#4CD964", price: 450 },
+        { id: 5, name: "Sky Azure", hex: "#5AC8FA", price: 480 },
+        { id: 6, name: "Royal Blue", hex: "#007AFF", price: 520 },
+        { id: 7, name: "Neon Purple", hex: "#5856D6", price: 510 },
+        { id: 8, name: "Rose Pink", hex: "#FF2D55", price: 490 },
+        { id: 9, name: "Teal Lagoon", hex: "#009688", price: 460 },
+        { id: 10, name: "Emerald Forest", hex: "#2E7D32", price: 530 },
+        { id: 11, name: "Amethyst Velvet", hex: "#7B1FA2", price: 550 },
+        { id: 12, name: "Crimson Red", hex: "#C62828", price: 499 },
+        { id: 13, name: "Amber Gold", hex: "#FFA000", price: 420 },
+        { id: 14, name: "Mint Frost", hex: "#A7FFEB", price: 380 },
+        { id: 15, name: "Cyan Breeze", hex: "#00E5FF", price: 430 },
+        { id: 16, name: "Indigo Night", hex: "#1A237E", price: 560 },
+        { id: 17, name: "Magenta Pop", hex: "#F50057", price: 470 },
+        { id: 18, name: "Lime Zest", hex: "#76FF03", price: 410 },
+        { id: 19, name: "Chocolate Truffle", hex: "#4E342E", price: 450 },
+        { id: 20, name: "Slate Charcoal", hex: "#37474F", price: 490 }
+      ];
+
+      wheelPalette = [...baseColors];
+      for (let i = 21; i <= 100; i++) {
+        const hue = (i * 137.5) % 360;
+        wheelPalette.push({
+          id: i,
+          name: `Shade #${i}`,
+          hex: `hsl(${hue}, 70%, 50%)`,
+          price: 450 + (i % 100)
+        });
+      }
+
+      mixerPalette = wheelPalette.slice(0, 30);
+      renderWheelDots();
+      updateWheelDisplay();
+      renderSwatches();
+      fetchReviews();
+    }
+
+    function goToHome() {
+      window.location.href = "#home";
+      showToast("Welcome to Paint House");
+    }
+
+    function toggleMobileNav() {
+      const nav = document.getElementById("main-nav");
+      if(nav) nav.classList.toggle("active");
+    }
+
+    function closeMobileNav() {
+      const nav = document.getElementById("main-nav");
+      if(nav) nav.classList.remove("active");
+    }
+
+    function fetchReviews() {
+      const container = document.getElementById("reviews-list-container");
+      if (mockReviews.length > 0) {
+        container.innerHTML = mockReviews.map(r => `
+          <div class="review-card">
+            <div style="color: #FF9500; font-size: 1.2rem; margin-bottom: 0.5rem;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+            <p style="color: #444; font-size: 0.9rem; margin-bottom: 1rem;">"${r.comment}"</p>
+            <strong style="font-size: 0.95rem;">- ${r.name}</strong>
+            <div style="color: #888; font-size: 0.75rem;">Verified Customer (${r.date})</div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = `<p style="color: #666;">No reviews yet. Be the first to leave a review!</p>`;
+      }
+    }
+
+    function handleReviewSubmit(e) {
+      e.preventDefault();
+      if (!currentUser) {
+        showToast("Please login to submit a review");
+        openAuthModal('login');
+        return;
+      }
+
+      const rating = parseInt(document.getElementById("review-rating").value);
+      const comment = document.getElementById("review-comment").value.trim();
+
+      mockReviews.unshift({
+        id: mockReviews.length + 1,
+        name: currentUser.name,
+        rating: rating,
+        comment: comment,
+        date: new Date().toISOString().split('T')[0]
+      });
+
+      showToast("Review submitted successfully!");
+      document.getElementById("review-comment").value = "";
+      fetchReviews();
+    }
+
+    function calculatePaint() {
+      const l = parseFloat(document.getElementById("calc-l").value) || 0;
+      const w = parseFloat(document.getElementById("calc-w").value) || 0;
+      const h = parseFloat(document.getElementById("calc-h").value) || 0;
+      const doors = parseInt(document.getElementById("calc-doors").value) || 0;
+
+      let wallArea = (2 * l * h) + (2 * w * h) - (doors * 20);
+      if(wallArea < 0) wallArea = 0;
+
+      const liters = Math.ceil(wallArea / 100);
+      const currentRate = wheelPalette[currentIdx] ? wheelPalette[currentIdx].price : 499;
+      const cost = Math.round((wallArea / 400) * currentRate);
+
+      document.getElementById("calc-liters").innerText = `${liters} Liters`;
+      document.getElementById("calc-cost").innerText = `INR ${cost > 0 ? cost : 0}`;
+      document.getElementById("calc-result").style.display = "block";
+    }
+
+    function renderWheelDots() {
+      const wheel = document.getElementById("wheel");
+      if (!wheel) return;
+      wheel.innerHTML = '<div class="wheel-center" id="wheel-center-bg"><h3 id="center-color-name"></h3><p id="center-color-hex"></p></div>';
+      const total = wheelPalette.length;
+      const radius = 145;
+
+      wheelPalette.forEach((item, idx) => {
+        const angle = (idx / total) * (2 * Math.PI) - (Math.PI / 2);
+        const x = 180 + radius * Math.cos(angle) - 9;
+        const y = 180 + radius * Math.sin(angle) - 9;
+
+        const dot = document.createElement("div");
+        dot.className = "wheel-dot";
+        dot.style.backgroundColor = item.hex;
+        dot.style.left = `${x}px`;
+        dot.style.top = `${y}px`;
+        dot.onclick = () => selectColorIndex(idx);
+        wheel.appendChild(dot);
+      });
+    }
+
+    function updateWheelDisplay() {
+      if (!wheelPalette || wheelPalette.length === 0) return;
+      const wheel = document.getElementById("wheel");
+      const angleStep = 360 / wheelPalette.length;
+      const rotation = -currentIdx * angleStep;
+      
+      if (wheel) wheel.style.transform = `rotate(${rotation}deg)`;
+
+      const item = wheelPalette[currentIdx];
+      
+      document.getElementById("color-name").innerText = item.name;
+      document.getElementById("color-hex").innerText = item.hex;
+      document.getElementById("center-color-name").innerText = item.name;
+      document.getElementById("center-color-hex").innerText = item.hex;
+      document.getElementById("color-price-display").innerText = `Price: INR ${item.price} / Room`;
+      
+      const centerBg = document.getElementById("wheel-center-bg");
+      if (centerBg) {
+        centerBg.style.backgroundColor = item.hex;
+        centerBg.style.transform = `rotate(${-rotation}deg)`;
+      }
+
+      document.getElementById("selected-color-input").value = item.name;
+
+      const preview = document.getElementById("room-preview");
+      if(preview) preview.style.backgroundColor = item.hex;
+      document.getElementById("calc-result").style.display = "none";
+    }
+
+    function nextColor() {
+      if (wheelPalette.length === 0) return;
+      currentIdx = (currentIdx + 1) % wheelPalette.length;
+      updateWheelDisplay();
+    }
+
+    function prevColor() {
+      if (wheelPalette.length === 0) return;
+      currentIdx = (currentIdx - 1 + wheelPalette.length) % wheelPalette.length;
+      updateWheelDisplay();
+    }
+
+    function selectColorIndex(idx) {
+      if (wheelPalette.length === 0) return;
+      currentIdx = idx;
+      updateWheelDisplay();
+    }
+
+    function renderSwatches() {
+      const container = document.getElementById("swatch-container");
+      if (!container) return;
+      container.innerHTML = "";
+      mixerPalette.forEach((item) => {
+        const swatch = document.createElement("div");
+        swatch.className = "swatch-circle";
+        swatch.style.backgroundColor = item.hex;
+        swatch.onclick = () => handleMixerSelection(item);
+        container.appendChild(swatch);
+      });
+    }
+
+    function handleMixerSelection(item) {
+      if (selectedMixerColors.includes(item.hex)) {
+        selectedMixerColors = selectedMixerColors.filter(h => h !== item.hex);
+      } else {
+        if (selectedMixerColors.length >= 2) selectedMixerColors.shift();
+        selectedMixerColors.push(item.hex);
+      }
+
+      const swatches = document.querySelectorAll('#swatch-container .swatch-circle');
+      swatches.forEach(s => {
+        if (selectedMixerColors.includes(rgbToHex(s.style.backgroundColor))) {
+          s.classList.add('selected');
+        } else {
+          s.classList.remove('selected');
+        }
+      });
+
+      if (selectedMixerColors.length === 2) {
+        mixTwoColors(selectedMixerColors[0], selectedMixerColors[1]);
+      } else if (selectedMixerColors.length === 1) {
+        document.getElementById("blend-hex").innerText = selectedMixerColors[0];
+        document.getElementById("blend-box").style.backgroundColor = selectedMixerColors[0];
+      }
+    }
+
+    function mixTwoColors(hex1, hex2) {
+      let c1 = parseHex(hex1);
+      let c2 = parseHex(hex2);
+      let mixed = `rgb(${Math.round((c1.r+c2.r)/2)}, ${Math.round((c1.g+c2.g)/2)}, ${Math.round((c1.b+c2.b)/2)})`;
+      let hexMixed = rgbToHex(mixed);
+      document.getElementById("blend-hex").innerText = hexMixed;
+      document.getElementById("blend-box").style.backgroundColor = hexMixed;
+    }
+
+    function onCustomColorPick(hex) {
+      document.getElementById("blend-hex").innerText = hex;
+      document.getElementById("blend-box").style.backgroundColor = hex;
+    }
+
+    function parseHex(hex) {
+      if(hex.startsWith('hsl')) return { r: 120, g: 120, b: 120 };
+      let c = hex.replace('#','');
+      if(c.length===3) c = c.split('').map(x => x+x).join('');
+      let num = parseInt(c, 16);
+      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    }
+
+    function rgbToHex(rgb) {
+      if(rgb.startsWith('#')) return rgb;
+      let match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      if(!match) return "#805B98";
+      function z(x) { return ('0' + parseInt(x).toString(16)).slice(-2); }
+      return '#' + z(match[1]) + z(match[2]) + z(match[3]);
+    }
+
+    function saveBlend() { 
+      navigator.clipboard.writeText(document.getElementById("blend-hex").innerText); 
+      showToast("Custom Blend Hex copied to clipboard!"); 
+    }
+
+    function openAuthModal(tab = 'login') { switchAuthTab(tab); document.getElementById("auth-modal").classList.add("active"); }
+    function closeAuthModal() { document.getElementById("auth-modal").classList.remove("active"); }
+
+    function switchAuthTab(tab) {
+      document.getElementById("login-tab-btn").classList.toggle("active", tab === 'login');
+      document.getElementById("register-tab-btn").classList.toggle("active", tab === 'register');
+      document.getElementById("login-form").style.display = tab === 'login' ? 'grid' : 'none';
+      document.getElementById("register-form").style.display = tab === 'register' ? 'grid' : 'none';
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      if (!email || !password) { showToast("Please enter email and password"); return; }
+
+      if (email === "admin@paint.house" || email.includes("admin")) {
+        currentUser = { name: "Admin Master", email: email, is_admin: true, upi_id: "paint.house@upi" };
+      } else {
+        currentUser = { name: "Banti Kumar", email: email, is_admin: false, upi_id: "" };
+      }
+
+      closeAuthModal();
+      updateUIForUser();
+      showToast(currentUser.is_admin ? "Logged in as Admin!" : `Welcome back, ${currentUser.name}!`);
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById("reg-name").value.trim();
+      const email = document.getElementById("reg-email").value.trim();
+      const password = document.getElementById("reg-password").value;
+
+      if (!name || !email || !password) { showToast("Please fill all fields"); return; }
+
+      currentUser = { name: name, email: email, is_admin: false, upi_id: "" };
+      closeAuthModal();
+      updateUIForUser();
+      showToast(`Account registered! Welcome, ${name}.`);
+    }
+
+    function updateUIForUser() {
+      const custSections = document.getElementById("customer-sections");
+      const bookBtn = document.getElementById("nav-book-btn");
+      const custNav = document.getElementById("customer-nav-links");
+      const adminNav = document.getElementById("admin-nav-links");
+
+      if (currentUser) {
+        document.getElementById("nav-auth-btn").style.display = "none";
+        document.getElementById("user-status").style.display = "flex";
+        document.getElementById("admin-upi-section").style.display = currentUser.is_admin ? "block" : "none";
+        
+        document.getElementById("edit-profile-name").value = currentUser.name;
+        document.getElementById("acc-email").innerText = currentUser.email;
+        document.getElementById("acc-role").innerText = currentUser.is_admin ? "ADMIN" : "CUSTOMER";
+        if(currentUser.upi_id) document.getElementById("admin-vpa-input").value = currentUser.upi_id;
+        if(currentUser.upi_id) document.getElementById("admin-modal-vpa-input").value = currentUser.upi_id;
+        document.getElementById("book-name").value = currentUser.name;
+        document.getElementById("book-email").value = currentUser.email;
+
+        if (currentUser.is_admin) {
+          if (custSections) custSections.style.display = "none";
+          if (bookBtn) bookBtn.style.display = "none";
+          if (custNav) custNav.style.display = "none";
+          if (adminNav) adminNav.style.display = "flex";
+          
+          document.getElementById("hero-main-title").innerHTML = "ADMIN<br>PORTAL";
+          document.getElementById("hero-main-desc").innerText = "Welcome to Paint House Admin Dashboard. Manage bookings, color prices, reviews, and UPI settings below.";
+          document.getElementById("hero-main-btn").innerText = "OPEN DASHBOARD ↓";
+          document.getElementById("hero-main-btn").onclick = () => openAdminDashboard('orders');
+
+          document.getElementById("customer-history-box").style.display = "none";
+        } else {
+          if (custSections) custSections.style.display = "block";
+          if (bookBtn) bookBtn.style.display = "inline-block";
+          if (custNav) custNav.style.display = "flex";
+          if (adminNav) adminNav.style.display = "none";
+          document.getElementById("customer-history-box").style.display = "block";
+        }
+      } else {
+        document.getElementById("nav-auth-btn").style.display = "inline";
+        document.getElementById("user-status").style.display = "none";
+        document.getElementById("admin-dashboard-btn").style.display = "none";
+        if (custSections) custSections.style.display = "block";
+        if (bookBtn) bookBtn.style.display = "inline-block";
+        if (custNav) custNav.style.display = "flex";
+        if (adminNav) adminNav.style.display = "none";
+        document.getElementById("customer-history-box").style.display = "block";
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      updateUIForUser();
+      window.location.reload();
+    }
+
+    function handleUpdateProfile(e) {
+      e.preventDefault();
+      const newName = document.getElementById("edit-profile-name").value.trim();
+      currentUser.name = newName;
+      updateUIForUser();
+      showToast("Profile name updated successfully!");
+    }
+
+    function openAccountModal() { 
+      if (!currentUser) return;
+      document.getElementById("account-modal").classList.add("active");
+    }
+    function closeAccountModal() { document.getElementById("account-modal").classList.remove("active"); }
+
+    function handleSaveUPI(e) {
+      e.preventDefault();
+      const upiId = document.getElementById("admin-vpa-input").value.trim();
+      currentUser.upi_id = upiId;
+      showToast("Admin UPI ID saved successfully!");
+    }
+
+    function handleSaveAdminUpiFromModal(e) {
+      e.preventDefault();
+      const upiId = document.getElementById("admin-modal-vpa-input").value.trim();
+      currentUser.upi_id = upiId;
+      document.getElementById("admin-vpa-input").value = upiId;
+      showToast("Admin UPI ID saved successfully!");
+    }
+
+    function handleDeleteAccount(e) {
+      e.preventDefault();
+      closeAccountModal();
+      currentUser = null;
+      updateUIForUser();
+      showToast("Account Deleted");
+    }
+
+    function handleBookingClick() {
+      if (!currentUser) { showToast("Please login or register to book."); openAuthModal('login'); }
+      else { openBookingModal(); }
+    }
+
+    function openBookingModal() {
+      recalculatePrice();
+      document.getElementById("booking-modal").classList.add("active");
+    }
+    function closeBookingModal() { document.getElementById("booking-modal").classList.remove("active"); }
+
+    function recalculatePrice() {
+      if(wheelPalette.length === 0) return;
+      const selectedColor = wheelPalette[currentIdx];
+      const rooms = parseInt(document.getElementById("book-rooms").value) || 1;
+      const rate = selectedColor ? selectedColor.price : 499;
+      const total = rate * rooms;
+
+      document.getElementById("summary-rate").innerText = `INR ${rate} / Room`;
+      document.getElementById("summary-total").innerText = `INR ${total}`;
+    }
+
+    function handleBookingSubmit(e) {
+      e.preventDefault();
+      const rooms = parseInt(document.getElementById("book-rooms").value) || 1;
+      const selectedColor = wheelPalette[currentIdx];
+      const totalAmount = selectedColor.price * rooms;
+      const payMode = document.getElementById("book-pay-mode").value;
+
+      const payload = {
+        id: mockBookings.length + 1,
+        full_name: document.getElementById("book-name").value,
+        phone: document.getElementById("book-phone").value,
+        color: selectedColor.name,
+        design_style: document.getElementById("book-style").value,
+        booking_date: document.getElementById("book-date").value,
+        booking_time: document.getElementById("book-time").value,
+        rooms: rooms,
+        amount: totalAmount,
+        payment_mode: payMode,
+        payment_status: payMode === 'ONLINE_UPI' ? 'Paid' : 'Pending (COD)'
+      };
+
+      mockBookings.unshift(payload);
+      closeBookingModal();
+      showToast("Booking Confirmed Successfully!");
+    }
+
+    function confirmOnlineUpiDone() {
+      closeUpiPayModal();
+      showToast("Online Payment Booking Confirmed!");
+    }
+
+    function closeUpiPayModal() { document.getElementById("upi-pay-modal").classList.remove("active"); }
+
+    // ADMIN DASHBOARD SECTION-WISE TABS
+    function openAdminDashboard(tab = 'orders') {
+      document.getElementById("admin-modal").classList.add("active");
+      switchAdminTab(tab);
+    }
+    function closeAdminDashboard() { document.getElementById("admin-modal").classList.remove("active"); }
+
+    function switchAdminTab(tab) {
+      document.getElementById("tab-btn-orders").classList.toggle("active", tab === 'orders');
+      document.getElementById("tab-btn-wheel-prices").classList.toggle("active", tab === 'wheel-prices');
+      document.getElementById("tab-btn-mixer-prices").classList.toggle("active", tab === 'mixer-prices');
+      document.getElementById("tab-btn-reviews").classList.toggle("active", tab === 'reviews');
+      document.getElementById("tab-btn-upi").classList.toggle("active", tab === 'upi');
+
+      document.getElementById("admin-orders-view").style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById("admin-wheel-prices-view").style.display = tab === 'wheel-prices' ? 'block' : 'none';
+      document.getElementById("admin-mixer-prices-view").style.display = tab === 'mixer-prices' ? 'block' : 'none';
+      document.getElementById("admin-reviews-view").style.display = tab === 'reviews' ? 'block' : 'none';
+      document.getElementById("admin-upi-view").style.display = tab === 'upi' ? 'block' : 'none';
+
+      if(tab === 'orders') loadAdminOrders();
+      else if(tab === 'wheel-prices') loadAdminWheelPrices();
+      else if(tab === 'mixer-prices') loadAdminMixerPrices();
+      else if(tab === 'reviews') loadAdminReviews();
+    }
+
+    function loadAdminOrders() {
+      const tbody = document.getElementById("admin-table-body");
+      if(mockBookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center;">No bookings found.</td></tr>`;
+      } else {
+        tbody.innerHTML = mockBookings.map(b => `
+          <tr>
+            <td>#${b.id}</td>
+            <td><strong>${b.full_name}</strong></td>
+            <td>${b.phone}</td>
+            <td>${b.color} (${b.design_style})</td>
+            <td>${b.booking_date} ${b.booking_time}</td>
+            <td>${b.rooms}</td>
+            <td>INR ${b.amount}</td>
+            <td><span class="${b.payment_mode==='COD'?'badge-cod':'badge-paid'}">${b.payment_mode}</span></td>
+            <td>${b.payment_status}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function loadAdminWheelPrices() {
+      const tbody = document.getElementById("admin-wheel-prices-body");
+      tbody.innerHTML = wheelPalette.slice(0, 15).map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td><span style="display:inline-block; width:20px; height:20px; background:${c.hex}; border-radius:50%;"></span> ${c.hex}</td>
+          <td>INR ${c.price}</td>
+          <td><input type="number" id="new-price-${c.id}" value="${c.price}" style="width:100px; padding:0.4rem;"></td>
+          <td><button class="btn-black" style="padding:0.4rem 0.8rem;" onclick="saveColorPrice(${c.id})">Update</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function loadAdminMixerPrices() {
+      const tbody = document.getElementById("admin-mixer-prices-body");
+      tbody.innerHTML = mixerPalette.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td><span style="display:inline-block; width:20px; height:20px; background:${c.hex}; border-radius:50%;"></span> ${c.hex}</td>
+          <td>INR ${c.price}</td>
+          <td><input type="number" id="new-mixer-price-${c.id}" value="${c.price}" style="width:100px; padding:0.4rem;"></td>
+          <td><button class="btn-black" style="padding:0.4rem 0.8rem;" onclick="showToast('Mixer Price Updated')">Update</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function loadAdminReviews() {
+      const tbody = document.getElementById("admin-reviews-table-body");
+      if(mockReviews.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No reviews found.</td></tr>`;
+      } else {
+        tbody.innerHTML = mockReviews.map(r => `
+          <tr>
+            <td>#${r.id}</td>
+            <td><strong>${r.name}</strong></td>
+            <td>${'★'.repeat(r.rating)} (${r.rating}/5)</td>
+            <td>${r.comment}</td>
+            <td>${r.date}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function saveColorPrice(colorId) {
+      const newPrice = document.getElementById(`new-price-${colorId}`).value;
+      const colorObj = wheelPalette.find(c => c.id === colorId);
+      if(colorObj) {
+        colorObj.price = parseInt(newPrice);
+        showToast("Color price updated successfully!");
+        updateWheelDisplay();
+      }
+    }
+
+    function showToast(msg) { 
+      const t = document.getElementById("toast"); 
+      if(t) { 
+        t.innerText = msg; 
+        t.classList.add("show"); 
+        setTimeout(() => t.classList.remove("show"), 2500); 
+      } 
+    }
+  </script>
+</body>
+</html>
