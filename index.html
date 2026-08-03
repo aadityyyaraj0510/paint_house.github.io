@@ -495,7 +495,7 @@
           <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">My Booking History</h3>
           <div class="admin-table-container" style="margin-top: 0; max-height: 380px;">
             <table class="admin-table">
-              <thead><tr><th>ID</th><th>Color</th><th>Date</th><th>Amount</th><th>Invoice</th></tr></thead>
+              <thead><tr><th>ID</th><th>Color</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
               <tbody id="user-history-body">
                 <tr><td colspan="5" style="text-align: center;">Loading history...</td></tr>
               </tbody>
@@ -543,7 +543,7 @@
           </div>
           <div class="form-group full"><label>NOTES (OPTIONAL)</label><input type="text" id="book-notes" placeholder="Specific requirements..."></div>
           <div class="form-group full" style="margin-top: 1rem;">
-            <button type="submit" class="btn-black" style="padding: 1rem; font-size: 0.9rem; background: #28a745;">CONFIRM & PROCEED TO PAY</button>
+            <button type="submit" class="btn-black" style="padding: 1rem; font-size: 0.9rem; background: #28a745;">PROCEED & PAY</button>
           </div>
         </form>
       </div>
@@ -555,20 +555,24 @@
     <div class="modal-card" style="text-align: center;">
       <button class="modal-close" onclick="closeUpiPayModal()">×</button>
       <div class="section-label">ONLINE UPI PAYMENT</div>
-      <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Transfer to Admin Bank</h2>
-      <p style="color: #666; font-size: 0.85rem; margin-bottom: 1rem;">Scan or pay using Google Pay, PhonePe, or Paytm.</p>
+      <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Direct UPI Payment</h2>
+      <p style="color: #666; font-size: 0.85rem; margin-bottom: 1rem;">Clicking the button below will instantly launch your installed UPI payment app with the exact amount loaded.</p>
 
-      <div style="background: #f0f0f0; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+      <div style="background: #f0f0f0; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
         <p style="font-size: 0.8rem; color: #666;">ADMIN UPI ID (VPA)</p>
         <h3 id="pay-modal-vpa" style="font-size: 1.3rem; color: #007AFF; margin-bottom: 0.5rem;">paint.house@upi</h3>
         <p style="font-size: 0.8rem; color: #666;">AMOUNT TO PAY</p>
         <h2 id="pay-modal-amount" style="font-size: 2rem; color: #28a745;">INR 499</h2>
       </div>
-      <button class="btn-black" onclick="confirmOnlineUpiDone()">I HAVE PAID — CONFIRM BOOKING</button>
+
+      <div>
+        <!-- Standard upi:// protocol link to trigger UPI apps directly -->
+        <a id="upi-deeplink-btn" href="#" class="btn-black" style="background: #007AFF; padding: 1rem 2.5rem; font-size: 1rem; display: inline-block;">📱 OPEN UPI APP TO PAY</a>
+      </div>
     </div>
   </div>
 
-  <!-- ADMIN DASHBOARD MODAL (INDIVIDUAL TABS/SECTIONS) -->
+  <!-- ADMIN DASHBOARD MODAL -->
   <div class="modal-overlay" id="admin-modal">
     <div class="modal-card wide">
       <button class="modal-close" onclick="closeAdminDashboard()">×</button>
@@ -583,7 +587,6 @@
         <div class="auth-tab" id="tab-btn-upi" onclick="switchAdminTab('upi')">UPI SETTINGS</div>
       </div>
 
-      <!-- SECTION 1: CUSTOMER BOOKINGS -->
       <div id="admin-orders-view" class="admin-table-container">
         <table class="admin-table">
           <thead>
@@ -595,7 +598,6 @@
         </table>
       </div>
 
-      <!-- SECTION 2: WHEEL COLOR PRICES -->
       <div id="admin-wheel-prices-view" class="admin-table-container" style="display: none;">
         <table class="admin-table">
           <thead>
@@ -607,7 +609,6 @@
         </table>
       </div>
 
-      <!-- SECTION 3: MIXER COLOR PRICES -->
       <div id="admin-mixer-prices-view" class="admin-table-container" style="display: none;">
         <table class="admin-table">
           <thead>
@@ -619,7 +620,6 @@
         </table>
       </div>
 
-      <!-- SECTION 4: CUSTOMER REVIEWS -->
       <div id="admin-reviews-view" class="admin-table-container" style="display: none;">
         <table class="admin-table">
           <thead>
@@ -631,7 +631,6 @@
         </table>
       </div>
 
-      <!-- SECTION 5: ADMIN UPI SETTINGS -->
       <div id="admin-upi-view" style="display: none; padding: 1.5rem 0;">
         <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Manage Bank UPI ID (VPA)</h3>
         <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">This UPI ID will be used when customers choose online UPI payment during booking.</p>
@@ -640,7 +639,6 @@
           <div class="form-group full" style="margin-top: 0.5rem;"><button type="submit" class="btn-black">SAVE ADMIN UPI ID</button></div>
         </form>
       </div>
-
     </div>
   </div>
 
@@ -671,7 +669,7 @@
 
   <div class="toast" id="toast">Notice</div>
 
-  <!-- JAVASCRIPT (STANDALONE / CLIENT-SIDE) -->
+  <!-- JAVASCRIPT -->
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
@@ -685,10 +683,10 @@
     let wheelPalette = [];
     let mixerPalette = [];
     let currentIdx = 0;
-    let currentPendingPayload = null;
     let selectedMixerColors = [];
     let mockBookings = [];
     let mockReviews = [];
+    let adminUpiId = "paint.house@upi";
 
     function initClientData() {
       const baseColors = [
@@ -701,21 +699,11 @@
         { id: 7, name: "Neon Purple", hex: "#5856D6", price: 510 },
         { id: 8, name: "Rose Pink", hex: "#FF2D55", price: 490 },
         { id: 9, name: "Teal Lagoon", hex: "#009688", price: 460 },
-        { id: 10, name: "Emerald Forest", hex: "#2E7D32", price: 530 },
-        { id: 11, name: "Amethyst Velvet", hex: "#7B1FA2", price: 550 },
-        { id: 12, name: "Crimson Red", hex: "#C62828", price: 499 },
-        { id: 13, name: "Amber Gold", hex: "#FFA000", price: 420 },
-        { id: 14, name: "Mint Frost", hex: "#A7FFEB", price: 380 },
-        { id: 15, name: "Cyan Breeze", hex: "#00E5FF", price: 430 },
-        { id: 16, name: "Indigo Night", hex: "#1A237E", price: 560 },
-        { id: 17, name: "Magenta Pop", hex: "#F50057", price: 470 },
-        { id: 18, name: "Lime Zest", hex: "#76FF03", price: 410 },
-        { id: 19, name: "Chocolate Truffle", hex: "#4E342E", price: 450 },
-        { id: 20, name: "Slate Charcoal", hex: "#37474F", price: 490 }
+        { id: 10, name: "Emerald Forest", hex: "#2E7D32", price: 530 }
       ];
 
       wheelPalette = [...baseColors];
-      for (let i = 21; i <= 100; i++) {
+      for (let i = 11; i <= 100; i++) {
         const hue = (i * 137.5) % 360;
         wheelPalette.push({
           id: i,
@@ -836,7 +824,6 @@
       if (wheel) wheel.style.transform = `rotate(${rotation}deg)`;
 
       const item = wheelPalette[currentIdx];
-      
       document.getElementById("color-name").innerText = item.name;
       document.getElementById("color-hex").innerText = item.hex;
       document.getElementById("center-color-name").innerText = item.name;
@@ -850,7 +837,6 @@
       }
 
       document.getElementById("selected-color-input").value = item.name;
-
       const preview = document.getElementById("room-preview");
       if(preview) preview.style.backgroundColor = item.hex;
       document.getElementById("calc-result").style.display = "none";
@@ -965,7 +951,7 @@
       if (!email || !password) { showToast("Please enter email and password"); return; }
 
       if (email === "admin@paint.house" || email.includes("admin")) {
-        currentUser = { name: "Admin Master", email: email, is_admin: true, upi_id: "paint.house@upi" };
+        currentUser = { name: "Admin Master", email: email, is_admin: true, upi_id: adminUpiId };
       } else {
         currentUser = { name: "Banti Kumar", email: email, is_admin: false, upi_id: "" };
       }
@@ -1003,8 +989,10 @@
         document.getElementById("edit-profile-name").value = currentUser.name;
         document.getElementById("acc-email").innerText = currentUser.email;
         document.getElementById("acc-role").innerText = currentUser.is_admin ? "ADMIN" : "CUSTOMER";
-        if(currentUser.upi_id) document.getElementById("admin-vpa-input").value = currentUser.upi_id;
-        if(currentUser.upi_id) document.getElementById("admin-modal-vpa-input").value = currentUser.upi_id;
+        
+        document.getElementById("admin-vpa-input").value = adminUpiId;
+        document.getElementById("admin-modal-vpa-input").value = adminUpiId;
+
         document.getElementById("book-name").value = currentUser.name;
         document.getElementById("book-email").value = currentUser.email;
 
@@ -1026,6 +1014,7 @@
           if (custNav) custNav.style.display = "flex";
           if (adminNav) adminNav.style.display = "none";
           document.getElementById("customer-history-box").style.display = "block";
+          loadUserHistory();
         }
       } else {
         document.getElementById("nav-auth-btn").style.display = "inline";
@@ -1055,22 +1044,21 @@
 
     function openAccountModal() { 
       if (!currentUser) return;
+      loadUserHistory();
       document.getElementById("account-modal").classList.add("active");
     }
     function closeAccountModal() { document.getElementById("account-modal").classList.remove("active"); }
 
     function handleSaveUPI(e) {
       e.preventDefault();
-      const upiId = document.getElementById("admin-vpa-input").value.trim();
-      currentUser.upi_id = upiId;
+      adminUpiId = document.getElementById("admin-vpa-input").value.trim();
       showToast("Admin UPI ID saved successfully!");
     }
 
     function handleSaveAdminUpiFromModal(e) {
       e.preventDefault();
-      const upiId = document.getElementById("admin-modal-vpa-input").value.trim();
-      currentUser.upi_id = upiId;
-      document.getElementById("admin-vpa-input").value = upiId;
+      adminUpiId = document.getElementById("admin-modal-vpa-input").value.trim();
+      document.getElementById("admin-vpa-input").value = adminUpiId;
       showToast("Admin UPI ID saved successfully!");
     }
 
@@ -1110,11 +1098,14 @@
       const selectedColor = wheelPalette[currentIdx];
       const totalAmount = selectedColor.price * rooms;
       const payMode = document.getElementById("book-pay-mode").value;
+      const userPhone = document.getElementById("book-phone").value;
+      const userEmail = currentUser ? currentUser.email : document.getElementById("book-email").value;
 
-      const payload = {
+      const newBooking = {
         id: mockBookings.length + 1,
         full_name: document.getElementById("book-name").value,
-        phone: document.getElementById("book-phone").value,
+        email: userEmail,
+        phone: userPhone,
         color: selectedColor.name,
         design_style: document.getElementById("book-style").value,
         booking_date: document.getElementById("book-date").value,
@@ -1122,22 +1113,67 @@
         rooms: rooms,
         amount: totalAmount,
         payment_mode: payMode,
-        payment_status: payMode === 'ONLINE_UPI' ? 'Paid' : 'Pending (COD)'
+        payment_status: payMode === 'ONLINE_UPI' ? 'Paid (Online)' : 'Confirmed (COD)'
       };
 
-      mockBookings.unshift(payload);
+      mockBookings.unshift(newBooking);
       closeBookingModal();
-      showToast("Booking Confirmed Successfully!");
+
+      if (payMode === 'ONLINE_UPI') {
+        openUpiPayModal(newBooking);
+      } else {
+        loadUserHistory();
+        showToast(`Booking Successful! Notification sent to ${userPhone}`);
+      }
     }
 
-    function confirmOnlineUpiDone() {
-      closeUpiPayModal();
-      showToast("Online Payment Booking Confirmed!");
+    function openUpiPayModal(booking) {
+      document.getElementById("pay-modal-vpa").innerText = adminUpiId;
+      document.getElementById("pay-modal-amount").innerText = `INR ${booking.amount}`;
+      
+      // Generate actual UPI intent link with exact pre-filled amount and recipient VPA
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(adminUpiId)}&pn=Paint%20House&am=${booking.amount}&cu=INR&tn=Booking%20%23${booking.id}`;
+      const upiBtn = document.getElementById("upi-deeplink-btn");
+      upiBtn.href = upiUrl;
+
+      // When user clicks the button to open UPI app, register booking notification
+      upiBtn.onclick = () => {
+        setTimeout(() => {
+          closeUpiPayModal();
+          loadUserHistory();
+          showToast(`Redirected to UPI App! Notification sent to ${booking.phone}`);
+        }, 1200);
+      };
+
+      document.getElementById("upi-pay-modal").classList.add("active");
     }
 
-    function closeUpiPayModal() { document.getElementById("upi-pay-modal").classList.remove("active"); }
+    function closeUpiPayModal() { 
+      document.getElementById("upi-pay-modal").classList.remove("active"); 
+    }
 
-    // ADMIN DASHBOARD SECTION-WISE TABS
+    function loadUserHistory() {
+      const tbody = document.getElementById("user-history-body");
+      if (!tbody || !currentUser) return;
+
+      const userOrders = mockBookings.filter(b => b.email === currentUser.email);
+
+      if (userOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color:#666;">No booking history found.</td></tr>`;
+      } else {
+        tbody.innerHTML = userOrders.map(b => `
+          <tr>
+            <td>#${b.id}</td>
+            <td>${b.color} (${b.rooms} Room)</td>
+            <td>${b.booking_date}</td>
+            <td>INR ${b.amount}</td>
+            <td><span class="badge-paid">${b.payment_status}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // ADMIN DASHBOARD
     function openAdminDashboard(tab = 'orders') {
       document.getElementById("admin-modal").classList.add("active");
       switchAdminTab(tab);
