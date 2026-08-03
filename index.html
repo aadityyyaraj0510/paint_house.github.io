@@ -108,9 +108,11 @@
 
     .mixer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: flex-start; }
     .swatch-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.6rem; max-height: 200px; overflow-y: auto; padding-right: 5px; }
-    .swatch-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; position: relative; border: 2px solid #ddd; }
+    .swatch-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; position: relative; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; }
     .swatch-circle.selected { border-color: #000; transform: scale(1.1); }
-    .blend-display { background: #805B98; height: 260px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; padding: 1.8rem; color: #fff; }
+    .swatch-circle.selected::after { content: ''; width: 12px; height: 12px; background: #fff; border-radius: 50%; border: 2px solid #000; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    
+    .blend-display { background: #FFFFFF; height: 260px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; padding: 1.8rem; color: #111; border: 1px solid #ddd; }
     .calculator-box { background: #fff; padding: 1.8rem; border-radius: 12px; border: 1px solid #eee; margin-top: 1rem; }
 
     .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
@@ -124,6 +126,48 @@
 
     .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
     .review-card { background: #fff; border: 1px solid #eee; padding: 2rem; border-radius: 12px; }
+
+    /* FLOATING CIRCULAR CALL WIDGET (BUBBLE) */
+    .floating-call-bubble {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 60px;
+      height: 60px;
+      background-color: #28a745;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.6rem;
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      z-index: 3500;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      text-decoration: none;
+    }
+    .floating-call-bubble:hover {
+      background-color: #218838;
+      transform: scale(1.1);
+    }
+    .floating-call-bubble::after {
+      content: 'Call Support';
+      position: absolute;
+      right: 70px;
+      background: #000;
+      color: #fff;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .floating-call-bubble:hover::after {
+      opacity: 1;
+    }
 
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -194,6 +238,11 @@
   <div id="paint-drop-intro">
     <div class="falling-drop"></div>
   </div>
+
+  <!-- FLOATING STICKY CIRCULAR CALL WIDGET -->
+  <a href="tel:+917372049917" class="floating-call-bubble" title="Call Customer Care">
+    📞
+  </a>
 
   <!-- THICKER DRIP LINES (BEHIND TEXT) -->
   <div class="drip-bar drip-1"></div><div class="drip-bar drip-2"></div>
@@ -322,22 +371,25 @@
 
       <div class="mixer-grid">
         <div>
-          <h3 style="margin-bottom: 0.5rem;">Custom Color Mixer (Pick 2 Colors)</h3>
-          <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">Click any 2 swatches below to blend them instantly!</p>
+          <h3 style="margin-bottom: 0.5rem;">Custom Color Mixer (Pick Multiple Colors)</h3>
+          <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">Click multiple swatches below to blend them into a signature shade!</p>
           <div class="swatch-picker" id="swatch-container"></div>
           
           <div class="blend-display" id="blend-box" style="margin-top: 1rem;">
-            <div style="letter-spacing: 1.5px; font-size: 0.85rem;">CUSTOM BLENDED SHADE</div>
+            <div style="letter-spacing: 1.5px; font-size: 0.85rem; color: #111;">CUSTOM BLENDED SHADE</div>
             <div style="text-align: center;">
-              <span style="font-size: 0.8rem; letter-spacing: 2px;">MIXED HEX</span>
-              <h2 id="blend-hex" style="font-size: 2.5rem; font-weight: 800;">#805B98</h2>
+              <span style="font-size: 0.8rem; letter-spacing: 2px; color: #555;">MIXED HEX</span>
+              <h2 id="blend-hex" style="font-size: 2.5rem; font-weight: 800; color: #111;">#FFFFFF</h2>
             </div>
-            <button class="btn-black" onclick="saveBlend()">COPY BLEND HEX</button>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+              <button class="btn-black" onclick="saveBlend()">COPY HEX</button>
+              <button class="btn-black" onclick="resetMixer()" style="background: #DC3545;">RESET MIXER</button>
+            </div>
           </div>
 
           <div style="margin-top: 1.5rem; background: #fff; padding: 1.2rem; border-radius: 12px; border: 1px solid #eee;">
-            <label style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Or Pick Custom Color from Board</label>
-            <input type="color" id="custom-color-picker" value="#ff5722" style="width: 100%; height: 45px; border: none; cursor: pointer; border-radius: 6px;" oninput="onCustomColorPick(this.value)">
+            <label style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Or Pick Custom Color from Board (Inserts into Mixer)</label>
+            <input type="color" id="custom-color-picker" value="#ffffff" style="width: 100%; height: 45px; border: none; cursor: pointer; border-radius: 6px;" onchange="onCustomColorPick(this.value)">
           </div>
         </div>
 
@@ -435,17 +487,38 @@
         <div class="auth-tab" id="register-tab-btn" onclick="switchAuthTab('register')">REGISTER</div>
       </div>
 
+      <!-- LOGIN FORM -->
       <form id="login-form" class="form-grid" onsubmit="handleLogin(event)" novalidate>
-        <div class="form-group full"><label>EMAIL ADDRESS</label><input type="text" id="login-email" required></div>
+        <div class="form-group full"><label>EMAIL ADDRESS</label><input type="email" id="login-email" required></div>
         <div class="form-group full"><label>PASSWORD</label><input type="password" id="login-password" required></div>
-        <div class="form-group full" style="margin-top: 0.5rem;"><button type="submit" class="btn-black">LOG IN</button></div>
+        <div class="form-group full" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+          <button type="submit" class="btn-black">LOG IN</button>
+          <a style="font-size: 0.75rem; color: #007AFF; cursor: pointer; font-weight: 700;" onclick="switchAuthTab('forgot')">Forgot Password?</a>
+        </div>
       </form>
 
+      <!-- REGISTER FORM -->
       <form id="register-form" class="form-grid" style="display: none;" onsubmit="handleRegister(event)" novalidate>
         <div class="form-group full"><label>FULL NAME</label><input type="text" id="reg-name" required></div>
-        <div class="form-group full"><label>EMAIL ADDRESS</label><input type="text" id="reg-email" required></div>
+        <div class="form-group full"><label>EMAIL ADDRESS</label><input type="email" id="reg-email" required></div>
         <div class="form-group full"><label>PASSWORD</label><input type="password" id="reg-password" required></div>
         <div class="form-group full" style="margin-top: 1rem;"><button type="submit" class="btn-black">REGISTER ACCOUNT</button></div>
+      </form>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <form id="forgot-form" class="form-grid" style="display: none;" onsubmit="handleSendOtp(event)" novalidate>
+        <div class="form-group full"><label>ENTER REGISTERED EMAIL</label><input type="email" id="forgot-email" required placeholder="your@email.com"></div>
+        <div class="form-group full" style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <button type="submit" class="btn-black">SEND OTP</button>
+          <button type="button" class="btn-outline" onclick="switchAuthTab('login')">Back to Login</button>
+        </div>
+      </form>
+
+      <!-- RESET PASSWORD FORM -->
+      <form id="reset-form" class="form-grid" style="display: none;" onsubmit="handleResetPassword(event)" novalidate>
+        <div class="form-group full"><label>ENTER 6-DIGIT OTP</label><input type="text" id="reset-otp" required placeholder="123456" maxlength="6"></div>
+        <div class="form-group full"><label>NEW PASSWORD</label><input type="password" id="reset-new-password" required placeholder="New password"></div>
+        <div class="form-group full" style="margin-top: 1rem;"><button type="submit" class="btn-black" style="background: #28a745;">UPDATE PASSWORD</button></div>
       </form>
     </div>
   </div>
@@ -566,7 +639,6 @@
       </div>
 
       <div>
-        <!-- Standard upi:// protocol link to trigger UPI apps directly -->
         <a id="upi-deeplink-btn" href="#" class="btn-black" style="background: #007AFF; padding: 1rem 2.5rem; font-size: 1rem; display: inline-block;">📱 OPEN UPI APP TO PAY</a>
       </div>
     </div>
@@ -680,6 +752,9 @@
     });
 
     let currentUser = null;
+    let registeredUsers = [];
+    let generatedOtp = null;
+    let resetTargetEmail = null;
     let wheelPalette = [];
     let mixerPalette = [];
     let currentIdx = 0;
@@ -868,6 +943,7 @@
         const swatch = document.createElement("div");
         swatch.className = "swatch-circle";
         swatch.style.backgroundColor = item.hex;
+        swatch.dataset.hex = item.hex;
         swatch.onclick = () => handleMixerSelection(item);
         container.appendChild(swatch);
       });
@@ -877,39 +953,66 @@
       if (selectedMixerColors.includes(item.hex)) {
         selectedMixerColors = selectedMixerColors.filter(h => h !== item.hex);
       } else {
-        if (selectedMixerColors.length >= 2) selectedMixerColors.shift();
         selectedMixerColors.push(item.hex);
       }
 
       const swatches = document.querySelectorAll('#swatch-container .swatch-circle');
       swatches.forEach(s => {
-        if (selectedMixerColors.includes(rgbToHex(s.style.backgroundColor))) {
+        if (selectedMixerColors.includes(s.dataset.hex)) {
           s.classList.add('selected');
         } else {
           s.classList.remove('selected');
         }
       });
 
-      if (selectedMixerColors.length === 2) {
-        mixTwoColors(selectedMixerColors[0], selectedMixerColors[1]);
-      } else if (selectedMixerColors.length === 1) {
-        document.getElementById("blend-hex").innerText = selectedMixerColors[0];
-        document.getElementById("blend-box").style.backgroundColor = selectedMixerColors[0];
+      if (selectedMixerColors.length > 0) {
+        mixMultipleColors(selectedMixerColors);
+      } else {
+        document.getElementById("blend-hex").innerText = "#FFFFFF";
+        document.getElementById("blend-box").style.backgroundColor = "#FFFFFF";
       }
     }
 
-    function mixTwoColors(hex1, hex2) {
-      let c1 = parseHex(hex1);
-      let c2 = parseHex(hex2);
-      let mixed = `rgb(${Math.round((c1.r+c2.r)/2)}, ${Math.round((c1.g+c2.g)/2)}, ${Math.round((c1.b+c2.b)/2)})`;
-      let hexMixed = rgbToHex(mixed);
+    function mixMultipleColors(hexArray) {
+      let totalR = 0, totalG = 0, totalB = 0;
+      hexArray.forEach(hex => {
+        let rgb = parseHex(hex);
+        totalR += rgb.r;
+        totalG += rgb.g;
+        totalB += rgb.b;
+      });
+
+      let count = hexArray.length;
+      let mixedR = Math.round(totalR / count);
+      let mixedG = Math.round(totalG / count);
+      let mixedB = Math.round(totalB / count);
+
+      let hexMixed = rgbToHex(`rgb(${mixedR}, ${mixedG}, ${mixedB})`);
       document.getElementById("blend-hex").innerText = hexMixed;
       document.getElementById("blend-box").style.backgroundColor = hexMixed;
     }
 
+    function resetMixer() {
+      selectedMixerColors = [];
+      document.getElementById("blend-hex").innerText = "#FFFFFF";
+      document.getElementById("blend-box").style.backgroundColor = "#FFFFFF";
+      const swatches = document.querySelectorAll('#swatch-container .swatch-circle');
+      swatches.forEach(s => s.classList.remove('selected'));
+      showToast("Mixer reset to White successfully!");
+    }
+
     function onCustomColorPick(hex) {
-      document.getElementById("blend-hex").innerText = hex;
-      document.getElementById("blend-box").style.backgroundColor = hex;
+      const newCustomColor = {
+        id: mixerPalette.length + 100,
+        name: `Custom #${mixerPalette.length + 1}`,
+        hex: hex,
+        price: 499
+      };
+      
+      mixerPalette.unshift(newCustomColor);
+      renderSwatches();
+      handleMixerSelection(newCustomColor);
+      showToast(`Custom color ${hex} created and added to your mixer!`);
     }
 
     function parseHex(hex) {
@@ -923,7 +1026,7 @@
     function rgbToHex(rgb) {
       if(rgb.startsWith('#')) return rgb;
       let match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      if(!match) return "#805B98";
+      if(!match) return "#FFFFFF";
       function z(x) { return ('0' + parseInt(x).toString(16)).slice(-2); }
       return '#' + z(match[1]) + z(match[2]) + z(match[3]);
     }
@@ -937,10 +1040,25 @@
     function closeAuthModal() { document.getElementById("auth-modal").classList.remove("active"); }
 
     function switchAuthTab(tab) {
-      document.getElementById("login-tab-btn").classList.toggle("active", tab === 'login');
-      document.getElementById("register-tab-btn").classList.toggle("active", tab === 'register');
-      document.getElementById("login-form").style.display = tab === 'login' ? 'grid' : 'none';
-      document.getElementById("register-form").style.display = tab === 'register' ? 'grid' : 'none';
+      const isLogin = tab === 'login';
+      const isRegister = tab === 'register';
+      const isForgot = tab === 'forgot';
+      const isReset = tab === 'reset';
+
+      const loginTabBtn = document.getElementById("login-tab-btn");
+      const regTabBtn = document.getElementById("register-tab-btn");
+      
+      if(loginTabBtn && regTabBtn) {
+        loginTabBtn.style.display = (isForgot || isReset) ? 'none' : 'block';
+        regTabBtn.style.display = (isForgot || isReset) ? 'none' : 'block';
+        loginTabBtn.classList.toggle("active", isLogin);
+        regTabBtn.classList.toggle("active", isRegister);
+      }
+
+      document.getElementById("login-form").style.display = isLogin ? 'grid' : 'none';
+      document.getElementById("register-form").style.display = isRegister ? 'grid' : 'none';
+      document.getElementById("forgot-form").style.display = isForgot ? 'grid' : 'none';
+      document.getElementById("reset-form").style.display = isReset ? 'grid' : 'none';
     }
 
     function handleLogin(e) {
@@ -953,7 +1071,15 @@
       if (email === "admin@paint.house" || email.includes("admin")) {
         currentUser = { name: "Admin Master", email: email, is_admin: true, upi_id: adminUpiId };
       } else {
-        currentUser = { name: "Banti Kumar", email: email, is_admin: false, upi_id: "" };
+        const foundUser = registeredUsers.find(u => u.email === email && u.password === password);
+        if (foundUser) {
+          currentUser = { name: foundUser.name, email: foundUser.email, is_admin: false, upi_id: "" };
+        } else if(email === "banti@gmail.com" && password === "123456") {
+          currentUser = { name: "Banti Kumar", email: email, is_admin: false, upi_id: "" };
+        } else {
+          showToast("Invalid email or password!");
+          return;
+        }
       }
 
       closeAuthModal();
@@ -969,10 +1095,49 @@
 
       if (!name || !email || !password) { showToast("Please fill all fields"); return; }
 
-      currentUser = { name: name, email: email, is_admin: false, upi_id: "" };
+      registeredUsers.push({ name, email, password });
+      
       closeAuthModal();
-      updateUIForUser();
-      showToast(`Account registered! Welcome, ${name}.`);
+      showToast("Account registered successfully! Please login.");
+      openAuthModal('login');
+      document.getElementById("login-email").value = email;
+    }
+
+    function handleSendOtp(e) {
+      e.preventDefault();
+      const email = document.getElementById("forgot-email").value.trim();
+      
+      const exists = registeredUsers.some(u => u.email === email) || email === "banti@gmail.com" || email.includes("admin");
+      if (!exists && registeredUsers.length > 0) {
+        showToast("Email address not found in system!");
+        return;
+      }
+
+      resetTargetEmail = email;
+      generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      showToast(`OTP Sent to ${email}: [ ${generatedOtp} ]`);
+      switchAuthTab('reset');
+    }
+
+    function handleResetPassword(e) {
+      e.preventDefault();
+      const userOtp = document.getElementById("reset-otp").value.trim();
+      const newPassword = document.getElementById("reset-new-password").value;
+
+      if (userOtp !== generatedOtp) {
+        showToast("Invalid OTP code entered!");
+        return;
+      }
+
+      const userRecord = registeredUsers.find(u => u.email === resetTargetEmail);
+      if (userRecord) {
+        userRecord.password = newPassword;
+      }
+
+      showToast("Password updated successfully! Please login.");
+      switchAuthTab('login');
+      document.getElementById("login-email").value = resetTargetEmail;
     }
 
     function updateUIForUser() {
@@ -1131,12 +1296,10 @@
       document.getElementById("pay-modal-vpa").innerText = adminUpiId;
       document.getElementById("pay-modal-amount").innerText = `INR ${booking.amount}`;
       
-      // Generate actual UPI intent link with exact pre-filled amount and recipient VPA
       const upiUrl = `upi://pay?pa=${encodeURIComponent(adminUpiId)}&pn=Paint%20House&am=${booking.amount}&cu=INR&tn=Booking%20%23${booking.id}`;
       const upiBtn = document.getElementById("upi-deeplink-btn");
       upiBtn.href = upiUrl;
 
-      // When user clicks the button to open UPI app, register booking notification
       upiBtn.onclick = () => {
         setTimeout(() => {
           closeUpiPayModal();
@@ -1278,7 +1441,7 @@
       if(t) { 
         t.innerText = msg; 
         t.classList.add("show"); 
-        setTimeout(() => t.classList.remove("show"), 2500); 
+        setTimeout(() => t.classList.remove("show"), 3000); 
       } 
     }
   </script>
