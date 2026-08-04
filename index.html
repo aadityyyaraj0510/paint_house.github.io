@@ -239,8 +239,8 @@
     <div class="falling-drop"></div>
   </div>
 
-  <!-- FLOATING STICKY CIRCULAR CALL WIDGET WITH DIRECT JS CLICK HANDLER -->
-  <a href="tel:+917372049917" onclick="window.location.href='tel:+917372049917'; return false;" class="floating-call-bubble" title="Call Customer Care">
+  <!-- FLOATING STICKY CIRCULAR CALL WIDGET -->
+  <a href="tel:+917372049917" class="floating-call-bubble" title="Call Customer Care">
     📞
   </a>
 
@@ -596,17 +596,17 @@
         </div>
 
         <form class="form-grid" onsubmit="handleBookingSubmit(event)">
-          <div class="form-group"><label>FULL NAME</label><input type="text" id="book-name" required></div>
-          <div class="form-group"><label>EMAIL</label><input type="email" id="book-email" required></div>
-          <div class="form-group"><label>CONTACT NUMBER</label><input type="tel" id="book-phone" value="+91 9876543210" required></div>
+          <div class="form-group"><label>FULL NAME</label><input type="text" id="book-name" required placeholder="Enter your full name"></div>
+          <div class="form-group"><label>EMAIL</label><input type="email" id="book-email" required placeholder="Enter your email"></div>
+          <div class="form-group"><label>CONTACT NUMBER</label><input type="tel" id="book-phone" required placeholder="Enter mobile number"></div>
           <div class="form-group"><label>ID PROOF (OPTIONAL)</label><input type="text" id="book-id-proof" placeholder="Aadhaar / Passport"></div>
           <div class="form-group"><label>SELECTED COLOR</label><input type="text" id="selected-color-input" value="Coral Blaze" readonly></div>
           <div class="form-group"><label>DESIGN STYLE</label>
             <select id="book-style"><option>Matte Classic</option><option>Glossy Premium</option><option>Textured Silk</option></select>
           </div>
           <div class="form-group"><label>DATE</label><input type="date" id="book-date" required></div>
-          <div class="form-group"><label>TIME</label><input type="time" id="book-time" value="09:00" required></div>
-          <div class="form-group"><label>ROOMS</label><input type="number" id="book-rooms" value="1" min="1" onchange="recalculatePrice()"></div>
+          <div class="form-group"><label>TIME</label><input type="time" id="book-time" required></div>
+          <div class="form-group"><label>ROOMS</label><input type="number" id="book-rooms" value="" placeholder="1" min="1" onchange="recalculatePrice()" required></div>
           <div class="form-group">
             <label>PAYMENT METHOD</label>
             <select id="book-pay-mode">
@@ -748,44 +748,74 @@
         const intro = document.getElementById('paint-drop-intro');
         if (intro) intro.style.display = 'none';
       }, 1600);
+      loadPersistedData();
       initClientData();
     });
 
     let currentUser = null;
-    let registeredUsers = [];
+    let registeredUsers = JSON.parse(localStorage.getItem('ph_registered_users')) || [];
+    let mockBookings = JSON.parse(localStorage.getItem('ph_bookings')) || [];
+    let mockReviews = JSON.parse(localStorage.getItem('ph_reviews')) || [];
+    let adminUpiId = localStorage.getItem('ph_admin_upi') || "paint.house@upi";
+    let wheelPalette = JSON.parse(localStorage.getItem('ph_wheel_palette')) || null;
+
     let generatedOtp = null;
     let resetTargetEmail = null;
-    let wheelPalette = [];
     let mixerPalette = [];
     let currentIdx = 0;
     let selectedMixerColors = [];
-    let mockBookings = [];
-    let mockReviews = [];
-    let adminUpiId = "paint.house@upi";
+
+    function persistAppData() {
+      localStorage.setItem('ph_registered_users', JSON.stringify(registeredUsers));
+      localStorage.setItem('ph_bookings', JSON.stringify(mockBookings));
+      localStorage.setItem('ph_reviews', JSON.stringify(mockReviews));
+      localStorage.setItem('ph_admin_upi', adminUpiId);
+      localStorage.setItem('ph_wheel_palette', JSON.stringify(wheelPalette));
+      if (currentUser) {
+        localStorage.setItem('ph_current_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('ph_current_user');
+      }
+    }
+
+    function loadPersistedData() {
+      const savedUser = localStorage.getItem('ph_current_user');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          updateUIForUser();
+        } catch (e) {
+          currentUser = null;
+        }
+      }
+    }
 
     function initClientData() {
-      const baseColors = [
-        { id: 1, name: "Coral Blaze", hex: "#FF3B30", price: 499 },
-        { id: 2, name: "Sunset Orange", hex: "#FF9500", price: 449 },
-        { id: 3, name: "Golden Sunshine", hex: "#FFCC00", price: 399 },
-        { id: 4, name: "Meadow Green", hex: "#4CD964", price: 450 },
-        { id: 5, name: "Sky Azure", hex: "#5AC8FA", price: 480 },
-        { id: 6, name: "Royal Blue", hex: "#007AFF", price: 520 },
-        { id: 7, name: "Neon Purple", hex: "#5856D6", price: 510 },
-        { id: 8, name: "Rose Pink", hex: "#FF2D55", price: 490 },
-        { id: 9, name: "Teal Lagoon", hex: "#009688", price: 460 },
-        { id: 10, name: "Emerald Forest", hex: "#2E7D32", price: 530 }
-      ];
+      if (!wheelPalette) {
+        const baseColors = [
+          { id: 1, name: "Coral Blaze", hex: "#FF3B30", price: 499 },
+          { id: 2, name: "Sunset Orange", hex: "#FF9500", price: 449 },
+          { id: 3, name: "Golden Sunshine", hex: "#FFCC00", price: 399 },
+          { id: 4, name: "Meadow Green", hex: "#4CD964", price: 450 },
+          { id: 5, name: "Sky Azure", hex: "#5AC8FA", price: 480 },
+          { id: 6, name: "Royal Blue", hex: "#007AFF", price: 520 },
+          { id: 7, name: "Neon Purple", hex: "#5856D6", price: 510 },
+          { id: 8, name: "Rose Pink", hex: "#FF2D55", price: 490 },
+          { id: 9, name: "Teal Lagoon", hex: "#009688", price: 460 },
+          { id: 10, name: "Emerald Forest", hex: "#2E7D32", price: 530 }
+        ];
 
-      wheelPalette = [...baseColors];
-      for (let i = 11; i <= 100; i++) {
-        const hue = (i * 137.5) % 360;
-        wheelPalette.push({
-          id: i,
-          name: `Shade #${i}`,
-          hex: `hsl(${hue}, 70%, 50%)`,
-          price: 450 + (i % 100)
-        });
+        wheelPalette = [...baseColors];
+        for (let i = 11; i <= 100; i++) {
+          const hue = (i * 137.5) % 360;
+          wheelPalette.push({
+            id: i,
+            name: `Shade #${i}`,
+            hex: `hsl(${hue}, 70%, 50%)`,
+            price: 450 + (i % 100)
+          });
+        }
+        persistAppData();
       }
 
       mixerPalette = wheelPalette.slice(0, 30);
@@ -845,6 +875,7 @@
         date: new Date().toISOString().split('T')[0]
       });
 
+      persistAppData();
       showToast("Review submitted successfully!");
       document.getElementById("review-comment").value = "";
       fetchReviews();
@@ -1068,9 +1099,14 @@
 
       if (!email || !password) { showToast("Please enter email and password"); return; }
 
-      if (email === "admin@paint.house" || email.includes("admin")) {
+      if (email === "admin@paint.house" && password === "admin123") {
         currentUser = { name: "Admin Master", email: email, is_admin: true, upi_id: adminUpiId };
       } else {
+        if (email === "admin@paint.house") {
+          showToast("Invalid admin password!");
+          return;
+        }
+
         const foundUser = registeredUsers.find(u => u.email === email && u.password === password);
         if (foundUser) {
           currentUser = { name: foundUser.name, email: foundUser.email, is_admin: false, upi_id: "" };
@@ -1082,6 +1118,7 @@
         }
       }
 
+      persistAppData();
       closeAuthModal();
       updateUIForUser();
       showToast(currentUser.is_admin ? "Logged in as Admin!" : `Welcome back, ${currentUser.name}!`);
@@ -1095,7 +1132,19 @@
 
       if (!name || !email || !password) { showToast("Please fill all fields"); return; }
 
+      if (email === "admin@paint.house") {
+        showToast("Cannot register under admin email address!");
+        return;
+      }
+
+      if (registeredUsers.some(u => u.email === email)) {
+        showToast("Email already registered! Please login.");
+        openAuthModal('login');
+        return;
+      }
+
       registeredUsers.push({ name, email, password });
+      persistAppData();
       
       closeAuthModal();
       showToast("Account registered successfully! Please login.");
@@ -1107,8 +1156,8 @@
       e.preventDefault();
       const email = document.getElementById("forgot-email").value.trim();
       
-      const exists = registeredUsers.some(u => u.email === email) || email === "banti@gmail.com" || email.includes("admin");
-      if (!exists && registeredUsers.length > 0) {
+      const exists = registeredUsers.some(u => u.email === email) || email === "banti@gmail.com";
+      if (!exists) {
         showToast("Email address not found in system!");
         return;
       }
@@ -1133,6 +1182,7 @@
       const userRecord = registeredUsers.find(u => u.email === resetTargetEmail);
       if (userRecord) {
         userRecord.password = newPassword;
+        persistAppData();
       }
 
       showToast("Password updated successfully! Please login.");
@@ -1195,6 +1245,7 @@
 
     function logout() {
       currentUser = null;
+      localStorage.removeItem('ph_current_user');
       updateUIForUser();
       window.location.reload();
     }
@@ -1203,6 +1254,7 @@
       e.preventDefault();
       const newName = document.getElementById("edit-profile-name").value.trim();
       currentUser.name = newName;
+      persistAppData();
       updateUIForUser();
       showToast("Profile name updated successfully!");
     }
@@ -1217,6 +1269,7 @@
     function handleSaveUPI(e) {
       e.preventDefault();
       adminUpiId = document.getElementById("admin-vpa-input").value.trim();
+      persistAppData();
       showToast("Admin UPI ID saved successfully!");
     }
 
@@ -1224,6 +1277,7 @@
       e.preventDefault();
       adminUpiId = document.getElementById("admin-modal-vpa-input").value.trim();
       document.getElementById("admin-vpa-input").value = adminUpiId;
+      persistAppData();
       showToast("Admin UPI ID saved successfully!");
     }
 
@@ -1231,6 +1285,7 @@
       e.preventDefault();
       closeAccountModal();
       currentUser = null;
+      localStorage.removeItem('ph_current_user');
       updateUIForUser();
       showToast("Account Deleted");
     }
@@ -1282,6 +1337,7 @@
       };
 
       mockBookings.unshift(newBooking);
+      persistAppData();
       closeBookingModal();
 
       if (payMode === 'ONLINE_UPI') {
@@ -1431,6 +1487,7 @@
       const colorObj = wheelPalette.find(c => c.id === colorId);
       if(colorObj) {
         colorObj.price = parseInt(newPrice);
+        persistAppData();
         showToast("Color price updated successfully!");
         updateWheelDisplay();
       }
